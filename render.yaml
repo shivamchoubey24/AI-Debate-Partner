@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ai-debate-partner
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+    disk:
+      name: rostrum-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1

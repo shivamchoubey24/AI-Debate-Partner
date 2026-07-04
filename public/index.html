@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Rostrum — AI Debate Partner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="masthead">
+    <div class="masthead__inner">
+      <div class="masthead__brand">
+        <span class="masthead__mark">§</span>
+        <div>
+          <h1>The Rostrum</h1>
+          <p class="masthead__tag">An AI Debate Partner — argue a motion, get rebutted, get scored.</p>
+        </div>
+      </div>
+      <nav class="masthead__nav" id="mastNav">
+        <!-- populated by app.js depending on auth state -->
+      </nav>
+    </div>
+  </header>
+
+  <main id="app">
+
+    <!-- AUTH VIEW -->
+    <section class="view" id="view-auth" hidden>
+      <div class="panel auth-panel">
+        <div class="panel__eyebrow" id="authEyebrow">01 — Sign in</div>
+        <h2 id="authTitle">Welcome back</h2>
+
+        <form id="authForm" novalidate>
+          <label class="field" id="displayNameField" hidden>
+            <span>Display name (optional)</span>
+            <input type="text" id="authDisplayName" autocomplete="nickname" />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" id="authEmail" autocomplete="email" required />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input type="password" id="authPassword" autocomplete="current-password" required minlength="8" />
+          </label>
+          <button class="btn btn--primary btn--block" id="authSubmitBtn" type="submit">Sign in</button>
+        </form>
+        <p class="hint" id="authHint"></p>
+        <p class="auth-toggle">
+          <span id="authToggleText">Don't have an account?</span>
+          <button class="linklike" id="authToggleBtn" type="button">Create one</button>
+        </p>
+      </div>
+    </section>
+
+    <!-- SETUP VIEW -->
+    <section class="view" id="view-setup" hidden>
+      <div class="panel setup">
+        <div class="panel__eyebrow">01 — Motion</div>
+        <h2>Choose or write the motion to be debated</h2>
+
+        <div class="topic-grid" id="topicGrid" aria-label="Suggested topics"></div>
+
+        <label class="field">
+          <span>Or propose your own motion</span>
+          <input type="text" id="customTopic" placeholder="e.g. Homework should be abolished in secondary school" />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="panel__eyebrow">02 — Your side</span>
+            <div class="pillgroup" id="stanceGroup">
+              <button class="pill" data-value="for">For the motion</button>
+              <button class="pill" data-value="against">Against the motion</button>
+            </div>
+          </label>
+
+          <label class="field">
+            <span class="panel__eyebrow">03 — Opponent strength</span>
+            <div class="pillgroup" id="difficultyGroup">
+              <button class="pill" data-value="easy">Easy</button>
+              <button class="pill" data-value="medium">Medium</button>
+              <button class="pill" data-value="hard">Hard</button>
+            </div>
+          </label>
+        </div>
+        <p class="hint">The opponent will also auto-adjust mid-debate if you're consistently over- or under-performing.</p>
+
+        <button class="btn btn--primary btn--block" id="startBtn">Take the floor</button>
+        <p class="hint" id="setupHint"></p>
+      </div>
+    </section>
+
+    <!-- DEBATE VIEW -->
+    <section class="view" id="view-debate" hidden>
+      <div class="debate-layout">
+
+        <div class="debate-main">
+          <div class="debate-header">
+            <div>
+              <div class="panel__eyebrow" id="debateTopicEyebrow">Motion</div>
+              <h2 id="debateTopic">—</h2>
+            </div>
+            <div class="stance-tags">
+              <span class="tag tag--you" id="youStanceTag">You: for</span>
+              <span class="tag tag--ai" id="aiStanceTag">AI: against</span>
+              <span class="tag tag--diff" id="diffTag">Medium</span>
+            </div>
+          </div>
+
+          <div class="sources-bar" id="sourcesBar" hidden>
+            <span class="sources-bar__label">Grounded on:</span>
+            <span id="sourcesBarText"></span>
+          </div>
+
+          <div class="banner" id="statusBanner" hidden></div>
+          <div class="banner banner--warn" id="noticeBanner" hidden></div>
+
+          <div class="transcript" id="transcript" aria-live="polite"></div>
+
+          <div class="composer">
+            <div class="composer__inputwrap">
+              <textarea id="userArgumentInput" placeholder="Make your argument or rebuttal…" rows="3"></textarea>
+              <button class="micbtn" id="micBtn" type="button" title="Speak your argument" aria-label="Speak your argument">🎙️</button>
+            </div>
+            <div class="composer__row">
+              <span class="hint" id="roundCounter">Round 1 of 5</span>
+              <div class="composer__actions">
+                <button class="btn btn--ghost" id="endDebateBtn">End &amp; get report</button>
+                <button class="btn btn--primary" id="submitArgBtn">Submit argument</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="debate-side">
+          <div class="panel meter-panel">
+            <div class="panel__eyebrow">Rhetoric Meter</div>
+            <svg id="meter" viewBox="0 0 220 130" class="meter"></svg>
+            <div class="meter__score" id="meterScore">—</div>
+            <div class="meter__breakdown" id="meterBreakdown"></div>
+          </div>
+          <div class="panel tips-panel">
+            <div class="panel__eyebrow">Coach notes</div>
+            <div id="coachFeedback" class="coach-feedback">Submit your first argument to get feedback here.</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- REPORT VIEW -->
+    <section class="view" id="view-report" hidden>
+      <div class="panel report">
+        <div class="panel__eyebrow">Final Report</div>
+        <h2 id="reportTopic">—</h2>
+        <div class="report__score" id="reportScore">
+          <span id="reportScoreNum">—</span><span class="report__scoreMax">/10</span>
+        </div>
+        <p class="report__verdict" id="reportVerdict"></p>
+        <div class="report__cols">
+          <div>
+            <h3>Strengths</h3>
+            <ul id="reportStrengths"></ul>
+          </div>
+          <div>
+            <h3>Sharpen these</h3>
+            <ul id="reportImprovements"></ul>
+          </div>
+        </div>
+        <div class="report__actions">
+          <button class="btn btn--ghost" id="downloadTranscriptBtn">Download transcript (.md)</button>
+          <button class="btn btn--ghost" id="shareBtn">Copy share link</button>
+          <button class="btn btn--primary" id="newDebateFromReportBtn">Start another debate</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHARED (PUBLIC, READ-ONLY) VIEW -->
+    <section class="view" id="view-shared" hidden>
+      <div class="panel report">
+        <div class="panel__eyebrow">Shared Debate Report</div>
+        <h2 id="sharedTopic">—</h2>
+        <div class="report__score" id="sharedScoreWrap">
+          <span id="sharedScoreNum">—</span><span class="report__scoreMax">/10</span>
+        </div>
+        <p class="report__verdict" id="sharedVerdict"></p>
+        <div class="report__cols">
+          <div>
+            <h3>Strengths</h3>
+            <ul id="sharedStrengths"></ul>
+          </div>
+          <div>
+            <h3>Sharpen these</h3>
+            <ul id="sharedImprovements"></ul>
+          </div>
+        </div>
+        <div class="report__actions">
+          <button class="btn btn--primary" id="tryItYourselfBtn">Try The Rostrum yourself</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY VIEW -->
+    <section class="view" id="view-history" hidden>
+      <div class="panel">
+        <div class="panel__eyebrow">Docket</div>
+        <h2>Past debates</h2>
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
